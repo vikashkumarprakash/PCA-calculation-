@@ -1,0 +1,68 @@
+---
+title: "PCA on wine tasting"
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+We will apply pca on wine dataset
+```{r}
+wine = read.csv("https://Analytics/wine.csv")
+```
+Applying PCA on relevant predictors
+```{r}
+pca<-prcomp(wine[,3:7],scale=TRUE)
+```
+Analyzing components of the output
+```{r}
+#Std Dev
+pca$sdev
+# Loadings
+pca$rotation
+# Principal Components
+pca$x
+```
+Creating biplot
+```{r}
+biplot(pca,scale=0)
+```
+Calculating proportion of variance
+```{r}
+pr.var<-pca$sdev^2
+pve<-pr.var/sum(pr.var)
+```
+Creating scree plot and cumulative plots
+```{r}
+plot(pve, xlab ="Principal Component", ylab ="Proportion of Variance Explained", ylim=c(0 ,1) ,type="b")
+plot(cumsum (pve), xlab ="Principal Component", ylab =" Cumulative Proportion of Variance Explained ", ylim=c(0 ,1), type="b")
+```
+  
+  Building model using PC1 to PC4
+```{r}
+predictor<-pca$x[,1:4]
+wine<-cbind(wine,predictor)
+model<-lm(Price~PC1+PC2+PC3+PC4,data=wine)
+summary(model)
+```
+#### Making Predictions  
+We cannot convert test data into principal components, by applying pca. Instead we have to apply same transformations on test data as we did for train data
+```{r}
+wineTest = read.csv("https://Vikash/Analytics/wine_test.csv")
+wineTest
+pca_test<-predict(pca,wineTest[,3:7])
+class(pca_test)
+pca_test
+# Converting to data frame
+pca_test<-as.data.frame(pca_test)
+pca_test
+```
+Making predictions
+```{r}
+pred_pca<-predict(object = model, newdata=pca_test)
+pred_pca
+wineTest$Price
+```
+
+
+
